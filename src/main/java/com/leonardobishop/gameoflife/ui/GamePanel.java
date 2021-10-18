@@ -22,10 +22,19 @@ public class GamePanel extends JPanel {
     public GamePanel(EventBus eventBus, JLabel mousePosition) {
         this.setPreferredSize(new Dimension(GRID_WIDTH, GRID_HEIGHT));
         this.addMouseMotionListener(new MouseMotionListener() {
+            int currentCellX;
+            int currentCellY;
             @Override
             public void mouseDragged(MouseEvent e) {
                 int cellX = e.getX() / CELL_LENGTH;
                 int cellY = e.getY() / CELL_LENGTH;
+
+                if (cellX == currentCellX && cellY == currentCellY) {
+                    return;
+                }
+
+                currentCellX = cellX;
+                currentCellY = cellY;
 
                 eventBus.dispatch(new CellClickedEvent(cellX, cellY));
             }
