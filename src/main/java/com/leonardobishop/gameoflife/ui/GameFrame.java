@@ -79,17 +79,15 @@ public class GameFrame extends JFrame {
             SwingUtilities.invokeLater(() -> {
                 GameStateUpdateEvent e = (GameStateUpdateEvent) event;
                 gamePanel.refresh(e.getGridSnapshot());
+                String state;
                 if (e.isRunning()) {
                     pauseButton.setText("Pause");
-                    gameStatus.setText("Game is running. (Frame: " + e.getFrame() + "; speed: " + e.getRate() + " Hz)");
+                    state = "running";
                 } else {
                     pauseButton.setText("Resume");
-                    if (e.getFrame() > 0) {
-                        gameStatus.setText("Game is paused. (Frame: " + e.getFrame() + "; speed: " + e.getRate() + " Hz)");
-                    } else {
-                        gameStatus.setText("Game is paused.");
-                    }
+                    state = "paused";
                 }
+                gameStatus.setText("Game is " + state + "." + (e.getFrame() > 0 ? " (Generation: " + e.getFrame() + "; speed: " + e.getRate() + " Hz)" : ""));
             });
         });
 
