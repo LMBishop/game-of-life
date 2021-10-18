@@ -2,10 +2,7 @@ package com.leonardobishop.gameoflife.ui;
 
 import com.leonardobishop.gameoflife.event.EventBus;
 import com.leonardobishop.gameoflife.event.game.GameStateUpdateEvent;
-import com.leonardobishop.gameoflife.event.user.PauseCommandEvent;
-import com.leonardobishop.gameoflife.event.user.SpeedDecreaseCommandEvent;
-import com.leonardobishop.gameoflife.event.user.SpeedIncreaseCommandEvent;
-import com.leonardobishop.gameoflife.event.user.StartCommandEvent;
+import com.leonardobishop.gameoflife.event.user.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -65,8 +62,9 @@ public class GameFrame extends JFrame {
                     eventBus.dispatch(new StartCommandEvent());
                 }
             });
-
-            stepButton.setEnabled(false);
+            stepButton.addActionListener(event -> {
+                eventBus.dispatch(new StepCommandEvent());
+            });
 
             controlPanel.revalidate();
 
@@ -79,16 +77,14 @@ public class GameFrame extends JFrame {
             SwingUtilities.invokeLater(() -> {
                 GameStateUpdateEvent e = (GameStateUpdateEvent) event;
                 gamePanel.refresh(e.getGridSnapshot());
-                String state;
-                if (e.isRunning()) {
-                    pauseButton.setText("Pause");
-                    state = "running";
-                } else {
-                    pauseButton.setText("Resume");
-                    state = "paused";
-                }
-                gameStatus.setText("Game is " + state + "." + (e.getFrame() > 0 ? " (Generation: " + e.getFrame() + "; speed: " + e.getRate() + " Hz)" : ""));
-                slowerButton.setEnabled(e.getRate() != 1);
+                boolean running = e.isRunning();
+
+                pauseButton.setText(running ? "Pause" : "Resume");
+                stepButton.setEnabled(!running);
+                slowerButton.setEnabled(running && e.getRate() != 1);
+                fasterButton.setEnabled(running);
+
+                gameStatus.setText("Game is " + (running ? "running" : "paused") + "." + (e.getFrame() > 0 ? " (Generation: " + e.getFrame() + "; speed: " + e.getRate() + " Hz)" : ""));
             });
         });
 
