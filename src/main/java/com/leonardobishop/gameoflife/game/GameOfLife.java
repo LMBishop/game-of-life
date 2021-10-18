@@ -22,7 +22,7 @@ public class GameOfLife extends Thread {
         this.grid = new Grid();
         this.eventBus = eventBus;
         this.scheduler = Executors.newScheduledThreadPool(1);
-        this.rate = 1;
+        this.rate = 2;
         this.blockingQueue = new LinkedBlockingDeque<>();
 
         eventBus.register("CellClickedEvent", event -> blockingQueue.add(() -> {
