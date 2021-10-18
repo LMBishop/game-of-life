@@ -12,6 +12,7 @@ public class GameOfLife extends Thread {
     private final EventBus eventBus;
     private final ScheduledExecutorService scheduler;
     private final BlockingQueue<Runnable> blockingQueue;
+    private final Runnable gameStep;
 
     private boolean running;
     private int frame;
@@ -39,8 +40,19 @@ public class GameOfLife extends Thread {
                 return;
             }
 
-            eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
             this.startGame();
+            eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
+        }));
+        eventBus.register("PauseCommandEvent", event -> blockingQueue.add(() -> {
+            if (!running) {
+                return;
+            }
+
+            if (game != null) {
+                game.cancel(false);
+                this.running = false;
+                eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
+            }
         }));
         eventBus.register("SpeedIncreaseCommandEvent", event -> blockingQueue.add(() -> {
             if (!running) {
@@ -58,29 +70,8 @@ public class GameOfLife extends Thread {
             eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
             this.startGame();
         }));
-    }
 
-    public Grid getGrid() {
-        return grid;
-    }
-
-    @Override
-    public void run() {
-        while (true) {
-            try {
-                blockingQueue.take().run();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void startGame() {
-        if (running) {
-            game.cancel(false);
-        }
-        running = true;
-        game = scheduler.scheduleAtFixedRate(() -> {
+        gameStep = () -> {
             GridSnapshot previous = new GridSnapshot(grid);
             for (int x = 0; x < grid.getWidth(); x++) {
                 for (int y = 0; y < grid.getHeight(); y++) {
@@ -113,7 +104,30 @@ public class GameOfLife extends Thread {
 
             frame++;
             eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
-        }, 1000/rate, 1000/rate, TimeUnit.MILLISECONDS);
+        };
+    }
+
+    public Grid getGrid() {
+        return grid;
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                blockingQueue.take().run();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void startGame() {
+        if (game != null) {
+            game.cancel(false);
+        }
+        running = true;
+        game = scheduler.scheduleAtFixedRate(gameStep, 1000/rate, 1000/rate, TimeUnit.MILLISECONDS);
     }
 
 }

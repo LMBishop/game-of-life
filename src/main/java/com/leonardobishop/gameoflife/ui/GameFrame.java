@@ -2,6 +2,7 @@ package com.leonardobishop.gameoflife.ui;
 
 import com.leonardobishop.gameoflife.event.EventBus;
 import com.leonardobishop.gameoflife.event.game.GameStateUpdateEvent;
+import com.leonardobishop.gameoflife.event.user.PauseCommandEvent;
 import com.leonardobishop.gameoflife.event.user.SpeedDecreaseCommandEvent;
 import com.leonardobishop.gameoflife.event.user.SpeedIncreaseCommandEvent;
 import com.leonardobishop.gameoflife.event.user.StartCommandEvent;
@@ -15,8 +16,15 @@ public class GameFrame extends JFrame {
     private final GamePanel gamePanel;
     private final JPanel controlPanel;
     private final JPanel statusPanel;
+
     private final JLabel mousePosition;
     private final JLabel gameStatus;
+
+    private final JButton initialButton;
+    private final JButton slowerButton;
+    private final JButton pauseButton;
+    private final JButton stepButton;
+    private final JButton fasterButton;
 
     public GameFrame(EventBus eventBus) {
         controlPanel = new JPanel();
@@ -32,14 +40,13 @@ public class GameFrame extends JFrame {
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JButton startButton = new JButton("Start game");
-        startButton.addActionListener(e -> {
+        initialButton = new JButton("Start game");
+        slowerButton = new JButton("<< Slower");
+        pauseButton = new JButton("Pause");
+        stepButton = new JButton("Step >|");
+        fasterButton = new JButton("Faster >>");
+        initialButton.addActionListener(e -> {
             controlPanel.remove(0);
-
-            JButton slowerButton = new JButton("<< Slower");
-            JButton pauseButton = new JButton("Pause");
-            JButton stepButton = new JButton("Step >|");
-            JButton fasterButton = new JButton("Faster >>");
 
             controlPanel.add(slowerButton);
             controlPanel.add(pauseButton);
@@ -48,6 +55,13 @@ public class GameFrame extends JFrame {
 
             slowerButton.addActionListener(event -> eventBus.dispatch(new SpeedDecreaseCommandEvent()));
             fasterButton.addActionListener(event -> eventBus.dispatch(new SpeedIncreaseCommandEvent()));
+            pauseButton.addActionListener(event -> {
+                if (pauseButton.getText().equals("Pause")) {
+                    eventBus.dispatch(new PauseCommandEvent());
+                } else {
+                    eventBus.dispatch(new StartCommandEvent());
+                }
+            });
 
             stepButton.setEnabled(false);
 
@@ -55,16 +69,22 @@ public class GameFrame extends JFrame {
 
             eventBus.dispatch(new StartCommandEvent());
         });
-        controlPanel.add(startButton);
+        controlPanel.add(initialButton);
 
         eventBus.register("GameStateUpdateEvent", event -> {
             SwingUtilities.invokeLater(() -> {
                 GameStateUpdateEvent e = (GameStateUpdateEvent) event;
                 gamePanel.refresh(e.getGridSnapshot());
                 if (e.isRunning()) {
+                    pauseButton.setText("Pause");
                     gameStatus.setText("Game is running. (Frame: " + e.getFrame() + "; speed: " + e.getRate() + " Hz)");
                 } else {
-                    gameStatus.setText("Game is paused.");
+                    pauseButton.setText("Resume");
+                    if (e.getFrame() > 0) {
+                        gameStatus.setText("Game is paused. (Frame: " + e.getFrame() + "; speed: " + e.getRate() + " Hz)");
+                    } else {
+                        gameStatus.setText("Game is paused.");
+                    }
                 }
             });
         });
