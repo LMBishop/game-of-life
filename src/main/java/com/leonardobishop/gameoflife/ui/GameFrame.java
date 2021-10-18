@@ -88,6 +88,7 @@ public class GameFrame extends JFrame {
                     state = "paused";
                 }
                 gameStatus.setText("Game is " + state + "." + (e.getFrame() > 0 ? " (Generation: " + e.getFrame() + "; speed: " + e.getRate() + " Hz)" : ""));
+                slowerButton.setEnabled(e.getRate() != 1);
             });
         });
 
