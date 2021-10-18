@@ -17,6 +17,7 @@ public class GameOfLife extends Thread {
     private final BlockingQueue<Runnable> blockingQueue;
     private final Runnable gameStep;
 
+    private boolean activated;
     private boolean running;
     private int frame;
     private int rate;
@@ -29,52 +30,7 @@ public class GameOfLife extends Thread {
         this.rate = 2;
         this.blockingQueue = new LinkedBlockingDeque<>();
 
-        eventBus.register("CellClickedEvent", event -> blockingQueue.add(() -> {
-            if (running) {
-                return;
-            }
-
-            CellClickedEvent e = (CellClickedEvent) event;
-            grid.toggle(e.getX(), e.getY());
-            eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
-        }));
-        eventBus.register("StartCommandEvent", event -> blockingQueue.add(() -> {
-            if (running) {
-                return;
-            }
-
-            this.startGame();
-            eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
-        }));
-        eventBus.register("PauseCommandEvent", event -> blockingQueue.add(() -> {
-            if (!running) {
-                return;
-            }
-
-            if (game != null) {
-                game.cancel(false);
-                this.running = false;
-                eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
-            }
-        }));
-        eventBus.register("SpeedIncreaseCommandEvent", event -> blockingQueue.add(() -> {
-            if (!running) {
-                return;
-            }
-            rate++;
-            eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
-            this.startGame();
-        }));
-        eventBus.register("SpeedDecreaseCommandEvent", event -> blockingQueue.add(() -> {
-            if (!running || rate == 1) {
-                return;
-            }
-            rate--;
-            eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
-            this.startGame();
-        }));
-
-        gameStep = () -> {
+        gameStep = () -> blockingQueue.add(() -> {
             GridSnapshot previous = new GridSnapshot(grid);
             for (int x = 0; x < grid.getWidth(); x++) {
                 for (int y = 0; y < grid.getHeight(); y++) {
@@ -107,11 +63,60 @@ public class GameOfLife extends Thread {
 
             frame++;
             eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
-        };
-    }
+        });
 
-    public Grid getGrid() {
-        return grid;
+        eventBus.register("CellClickedEvent", event -> blockingQueue.add(() -> {
+            if (activated || running) {
+                return;
+            }
+
+            CellClickedEvent e = (CellClickedEvent) event;
+            grid.toggle(e.getX(), e.getY());
+            eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
+        }));
+        eventBus.register("StartCommandEvent", event -> blockingQueue.add(() -> {
+            if (running) {
+                return;
+            }
+
+            this.activated = true;
+            this.startGame();
+            eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
+        }));
+        eventBus.register("PauseCommandEvent", event -> blockingQueue.add(() -> {
+            if (!running) {
+                return;
+            }
+
+            if (game != null) {
+                game.cancel(false);
+                this.running = false;
+                eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
+            }
+        }));
+        eventBus.register("StepCommandEvent", event -> blockingQueue.add(() -> {
+            if (running) {
+                return;
+            }
+
+            gameStep.run();
+        }));
+        eventBus.register("SpeedIncreaseCommandEvent", event -> blockingQueue.add(() -> {
+            if (!running) {
+                return;
+            }
+            rate++;
+            eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
+            this.startGame();
+        }));
+        eventBus.register("SpeedDecreaseCommandEvent", event -> blockingQueue.add(() -> {
+            if (!running || rate == 1) {
+                return;
+            }
+            rate--;
+            eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
+            this.startGame();
+        }));
     }
 
     @Override
