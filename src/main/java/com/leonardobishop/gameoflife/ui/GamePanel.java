@@ -90,10 +90,11 @@ public class GamePanel extends JPanel {
                 if (recentSnapshot != null && recentSnapshot.get(cellX, cellY)) {
                     graphics.setPaint(Color.BLACK);
                     graphics.fillRect(x, y, CELL_LENGTH, CELL_LENGTH);
+                    graphics.setPaint(Color.GRAY);
                 } else {
                     graphics.setPaint(Color.LIGHT_GRAY);
-                    graphics.drawRect(x, y, CELL_LENGTH, CELL_LENGTH);
                 }
+                graphics.drawRect(x, y, CELL_LENGTH, CELL_LENGTH);
             }
         }
     }
