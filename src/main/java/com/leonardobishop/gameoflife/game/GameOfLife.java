@@ -8,6 +8,9 @@ import java.util.concurrent.*;
 
 public class GameOfLife extends Thread {
 
+    public static final int GRID_WIDTH = 75;
+    public static final int GRID_HEIGHT = 50;
+
     private final Grid grid;
     private final EventBus eventBus;
     private final ScheduledExecutorService scheduler;

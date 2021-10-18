@@ -2,17 +2,14 @@ package com.leonardobishop.gameoflife.game;
 
 public class Grid {
 
-    private final int GRID_WIDTH = 75;
-    private final int GRID_HEIGHT = 50;
-
     private final boolean[][] grid;
 
     public Grid() {
-        this.grid = new boolean[GRID_WIDTH][GRID_HEIGHT];
+        this.grid = new boolean[GameOfLife.GRID_WIDTH][GameOfLife.GRID_HEIGHT];
     }
 
     public void toggle(int x, int y) {
-        if (x < 0 || y < 0 || x >= GRID_WIDTH || y >= GRID_HEIGHT) {
+        if (x < 0 || y < 0 || x >= GameOfLife.GRID_WIDTH || y >= GameOfLife.GRID_HEIGHT) {
             return;
         }
 
@@ -20,7 +17,7 @@ public class Grid {
     }
 
     public boolean get(int x, int y) {
-        if (x < 0 || y < 0 || x >= GRID_WIDTH || y >= GRID_HEIGHT) {
+        if (x < 0 || y < 0 || x >= GameOfLife.GRID_WIDTH || y >= GameOfLife.GRID_HEIGHT) {
             return false;
         }
 
@@ -28,11 +25,11 @@ public class Grid {
     }
 
     public int getWidth() {
-        return GRID_WIDTH;
+        return GameOfLife.GRID_WIDTH;
     }
 
     public int getHeight() {
-        return GRID_HEIGHT;
+        return GameOfLife.GRID_HEIGHT;
     }
 
 }

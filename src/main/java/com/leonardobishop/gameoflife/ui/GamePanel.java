@@ -2,6 +2,7 @@ package com.leonardobishop.gameoflife.ui;
 
 import com.leonardobishop.gameoflife.event.EventBus;
 import com.leonardobishop.gameoflife.event.user.CellClickedEvent;
+import com.leonardobishop.gameoflife.game.GameOfLife;
 import com.leonardobishop.gameoflife.game.GridSnapshot;
 
 import javax.swing.*;
@@ -12,9 +13,9 @@ import java.awt.event.MouseMotionListener;
 
 public class GamePanel extends JPanel {
 
-    private final int GRID_WIDTH = 750;
-    private final int GRID_HEIGHT = 500;
-    private final int CELL_LENGTH = 10;
+    private final int CELL_LENGTH = 12;
+    private final int GRID_HEIGHT = GameOfLife.GRID_HEIGHT * CELL_LENGTH;
+    private final int GRID_WIDTH = GameOfLife.GRID_WIDTH * CELL_LENGTH;
 
     private GridSnapshot recentSnapshot;
 
