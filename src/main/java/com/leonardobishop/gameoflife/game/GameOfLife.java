@@ -3,6 +3,7 @@ package com.leonardobishop.gameoflife.game;
 import com.leonardobishop.gameoflife.event.user.CellClickedEvent;
 import com.leonardobishop.gameoflife.event.EventBus;
 import com.leonardobishop.gameoflife.event.game.GameStateUpdateEvent;
+import com.leonardobishop.gameoflife.event.user.OptionSetUpdateEvent;
 
 import java.util.concurrent.*;
 
@@ -74,13 +75,21 @@ public class GameOfLife extends Thread {
             grid.toggle(e.getX(), e.getY());
             eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
         }));
+        eventBus.register("OptionSetUpdateEvent", event -> blockingQueue.add(() -> {
+            if (activated) {
+                return;
+            }
+
+            OptionSetUpdateEvent e = (OptionSetUpdateEvent) event;
+            grid.setToroidal(e.getOptionSet().isToroidalGrid());
+        }));
         eventBus.register("StartCommandEvent", event -> blockingQueue.add(() -> {
             if (running) {
                 return;
             }
 
             this.activated = true;
-            this.startGame();
+            this.resumeAutomatedPlay();
             eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
         }));
         eventBus.register("PauseCommandEvent", event -> blockingQueue.add(() -> {
@@ -107,7 +116,7 @@ public class GameOfLife extends Thread {
             }
             rate++;
             eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
-            this.startGame();
+            this.resumeAutomatedPlay();
         }));
         eventBus.register("SpeedDecreaseCommandEvent", event -> blockingQueue.add(() -> {
             if (!running || rate == 1) {
@@ -115,7 +124,7 @@ public class GameOfLife extends Thread {
             }
             rate--;
             eventBus.dispatch(new GameStateUpdateEvent(new GridSnapshot(grid), running, frame, rate));
-            this.startGame();
+            this.resumeAutomatedPlay();
         }));
     }
 
@@ -130,7 +139,7 @@ public class GameOfLife extends Thread {
         }
     }
 
-    public void startGame() {
+    public void resumeAutomatedPlay() {
         if (game != null) {
             game.cancel(false);
         }

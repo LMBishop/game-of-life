@@ -3,6 +3,7 @@ package com.leonardobishop.gameoflife.ui;
 import com.leonardobishop.gameoflife.event.EventBus;
 import com.leonardobishop.gameoflife.event.game.GameStateUpdateEvent;
 import com.leonardobishop.gameoflife.event.user.*;
+import com.leonardobishop.gameoflife.game.OptionSet;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -24,7 +25,10 @@ public class GameFrame extends JFrame {
     private final JButton stepButton;
     private final JButton fasterButton;
 
+    private OptionSet optionSet;
+
     public GameFrame(EventBus eventBus) {
+        optionSet = new OptionSet();
         controlPanel = new JPanel();
         statusPanel = new JPanel();
         mousePosition = new JLabel();
@@ -69,6 +73,31 @@ public class GameFrame extends JFrame {
             controlPanel.revalidate();
 
             eventBus.dispatch(new StartCommandEvent());
+        });
+        settingsButton.addActionListener(e -> {
+            JDialog modal = new JDialog(this, "Options", true);
+            modal.setLayout(new GridLayout(2, 1));
+
+            JCheckBox toroidalGrid = new JCheckBox("Use toroidal grid instead of bounded grid");
+            toroidalGrid.setToolTipText("A toroidal grid has no bounds on the edges, instead the edges are 'stitched' to the opposite ends creating one contiguous grid.");
+            JButton confirmButton = new JButton("Confirm");
+
+            confirmButton.addActionListener(e1 -> {
+                optionSet = new OptionSet(toroidalGrid.isSelected());
+                eventBus.dispatch(new OptionSetUpdateEvent(optionSet));
+                modal.setVisible(false);
+                modal.dispose();
+            });
+
+            toroidalGrid.setSelected(optionSet.isToroidalGrid());
+
+            modal.add(toroidalGrid);
+            modal.add(confirmButton);
+
+            modal.setResizable(false);
+            modal.pack();
+            modal.setLocationRelativeTo(null);
+            modal.setVisible(true);
         });
         controlPanel.add(initialButton);
         controlPanel.add(settingsButton);

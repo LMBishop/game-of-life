@@ -3,13 +3,23 @@ package com.leonardobishop.gameoflife.game;
 public class Grid {
 
     private final boolean[][] grid;
+    private boolean toroidal;
+
 
     public Grid() {
+        this(false);
+    }
+
+    public Grid(boolean toroidal) {
+        this.toroidal = toroidal;
         this.grid = new boolean[GameOfLife.GRID_WIDTH][GameOfLife.GRID_HEIGHT];
     }
 
     public void toggle(int x, int y) {
-        if (x < 0 || y < 0 || x >= GameOfLife.GRID_WIDTH || y >= GameOfLife.GRID_HEIGHT) {
+        if (toroidal) {
+            x = Math.floorMod(x, GameOfLife.GRID_WIDTH);
+            y = Math.floorMod(y, GameOfLife.GRID_HEIGHT);
+        } else if (x < 0 || y < 0 || x >= GameOfLife.GRID_WIDTH || y >= GameOfLife.GRID_HEIGHT) {
             return;
         }
 
@@ -17,7 +27,10 @@ public class Grid {
     }
 
     public boolean get(int x, int y) {
-        if (x < 0 || y < 0 || x >= GameOfLife.GRID_WIDTH || y >= GameOfLife.GRID_HEIGHT) {
+        if (toroidal) {
+            x = Math.floorMod(x, GameOfLife.GRID_WIDTH);
+            y = Math.floorMod(y, GameOfLife.GRID_HEIGHT);
+        } else if (x < 0 || y < 0 || x >= GameOfLife.GRID_WIDTH || y >= GameOfLife.GRID_HEIGHT) {
             return false;
         }
 
@@ -32,4 +45,11 @@ public class Grid {
         return GameOfLife.GRID_HEIGHT;
     }
 
+    public boolean isToroidal() {
+        return toroidal;
+    }
+
+    public void setToroidal(boolean toroidal) {
+        this.toroidal = toroidal;
+    }
 }
