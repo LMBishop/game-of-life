@@ -21,6 +21,7 @@ public class GameFrame extends JFrame {
     private final JLabel gameStatus;
 
     private final JButton initialButton;
+    private final JButton settingsButton;
     private final JButton slowerButton;
     private final JButton pauseButton;
     private final JButton stepButton;
@@ -40,13 +41,15 @@ public class GameFrame extends JFrame {
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        initialButton = new JButton("Start game");
+        initialButton = new JButton("Start Game");
+        settingsButton = new JButton("\u2699 Settings...");
         slowerButton = new JButton("<< Slower");
         pauseButton = new JButton("Pause");
         stepButton = new JButton("Step >|");
         fasterButton = new JButton("Faster >>");
         initialButton.addActionListener(e -> {
-            controlPanel.remove(0);
+            controlPanel.remove(initialButton);
+            controlPanel.remove(settingsButton);
 
             controlPanel.add(slowerButton);
             controlPanel.add(pauseButton);
@@ -70,6 +73,7 @@ public class GameFrame extends JFrame {
             eventBus.dispatch(new StartCommandEvent());
         });
         controlPanel.add(initialButton);
+        controlPanel.add(settingsButton);
 
         eventBus.register("GameStateUpdateEvent", event -> {
             SwingUtilities.invokeLater(() -> {
