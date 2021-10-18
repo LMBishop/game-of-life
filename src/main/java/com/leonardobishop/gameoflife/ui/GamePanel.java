@@ -42,15 +42,15 @@ public class GamePanel extends JPanel {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                int cellX = e.getX() / CELL_LENGTH;
-                int cellY = e.getY() / CELL_LENGTH;
-
-                eventBus.dispatch(new CellClickedEvent(cellX, cellY));
+                // no-op
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                // no-op
+                int cellX = e.getX() / CELL_LENGTH;
+                int cellY = e.getY() / CELL_LENGTH;
+
+                eventBus.dispatch(new CellClickedEvent(cellX, cellY));
             }
 
             @Override
